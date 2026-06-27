@@ -9,29 +9,30 @@ import { cn } from "@/lib/utils";
  * Pinned 3-stage scroll sequence. The right rail sticks while the left column
  * scrolls; the active stage tracks scroll progress. Reduced motion → static list.
  */
-export function UnderstandBuildShow() {
-  const reduce = useReducedMotion();
+/** Static 3-up grid — used on mobile and under reduced motion. */
+function StaticStages() {
+  return (
+    <div className="grid gap-px overflow-hidden rounded-card-lg border border-hairline bg-hairline sm:grid-cols-3">
+      {stages.map((s) => (
+        <div key={s.n} className="bg-surface p-7">
+          <span className="font-mono text-[12px] text-caption">{s.n}</span>
+          <h3 className="mt-4 font-display text-[20px] font-semibold tracking-[-0.02em] text-ink">
+            {s.title}
+          </h3>
+          <p className="mt-2 text-[14px] leading-relaxed text-body">{s.body}</p>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+/** Pinned scroll sequence — desktop only. */
+function PinnedStages() {
   const ref = useRef<HTMLDivElement>(null);
   const { scrollYProgress } = useScroll({
     target: ref,
     offset: ["start start", "end end"],
   });
-
-  if (reduce) {
-    return (
-      <div className="grid gap-px overflow-hidden rounded-card-lg border border-hairline bg-hairline sm:grid-cols-3">
-        {stages.map((s) => (
-          <div key={s.n} className="bg-surface p-7">
-            <span className="font-mono text-[12px] text-caption">{s.n}</span>
-            <h3 className="mt-4 font-display text-[20px] font-semibold tracking-[-0.02em] text-ink">
-              {s.title}
-            </h3>
-            <p className="mt-2 text-[14px] leading-relaxed text-body">{s.body}</p>
-          </div>
-        ))}
-      </div>
-    );
-  }
 
   return (
     <div ref={ref} className="relative" style={{ height: "260vh" }}>
@@ -49,6 +50,25 @@ export function UnderstandBuildShow() {
         </div>
       </div>
     </div>
+  );
+}
+
+/**
+ * Mobile gets a static 3-up grid; large screens get the pinned scroll sequence.
+ * Reduced motion always uses the static grid.
+ */
+export function UnderstandBuildShow() {
+  const reduce = useReducedMotion();
+  if (reduce) return <StaticStages />;
+  return (
+    <>
+      <div className="lg:hidden">
+        <StaticStages />
+      </div>
+      <div className="hidden lg:block">
+        <PinnedStages />
+      </div>
+    </>
   );
 }
 

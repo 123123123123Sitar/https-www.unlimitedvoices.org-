@@ -9,12 +9,12 @@ export function LearningChain() {
   const reduce = useReducedMotion();
 
   return (
-    <div className="flex items-center justify-center py-2" aria-hidden="true">
+    <div className="flex items-center justify-center overflow-hidden py-2" aria-hidden="true">
       <div className="flex items-center">
         {Array.from({ length: NODES }).map((_, i) => (
           <div key={i} className="flex items-center">
             <motion.span
-              className="relative flex h-11 w-11 items-center justify-center rounded-[8px] border border-[#26272B] bg-[#111113]"
+              className="relative flex h-9 w-9 items-center justify-center rounded-[8px] border border-[#26272B] bg-[#111113] sm:h-11 sm:w-11"
               initial={reduce ? false : { opacity: 0.5 }}
               animate={reduce ? undefined : { opacity: [0.5, 1, 0.5] }}
               transition={{
@@ -27,7 +27,7 @@ export function LearningChain() {
               <span className="h-2.5 w-2.5 rounded-[2px] bg-[#5B7BFF]" />
             </motion.span>
             {i < NODES - 1 && (
-              <span className="relative h-px w-8 overflow-hidden bg-[#26272B] sm:w-12">
+              <span className="relative h-px w-5 overflow-hidden bg-[#26272B] sm:w-12">
                 {!reduce && (
                   <motion.span
                     className="absolute inset-y-0 left-0 w-4 bg-[#5B7BFF]"

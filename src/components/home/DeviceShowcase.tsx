@@ -314,7 +314,35 @@ function Phone({ active }: { active?: number }) {
 
 /* ------------------------------ showcase ------------------------------- */
 
-export function DeviceShowcase() {
+/** Simple stacked layout — used on mobile and under reduced motion. */
+function SimpleShowcase() {
+  return (
+    <section className="bg-[var(--bg-alt)] py-20 sm:py-28">
+      <div className="mx-auto grid w-full max-w-container items-center gap-12 px-6 sm:px-8 lg:grid-cols-2 lg:gap-16">
+        <div>
+          <span className="text-kicker">See it in action</span>
+          <h2 className="mt-4 text-display-md font-semibold text-ink">
+            Learn by building, right in your browser.
+          </h2>
+          <p className="mt-5 max-w-[46ch] text-[16px] leading-relaxed text-body">
+            Read a short lesson, build it in a real lab, run the tests, and keep the XP and
+            records you earn.
+          </p>
+          <Button href="/start-learning" className="mt-8">
+            Start learning free
+            <ArrowRight size={16} />
+          </Button>
+        </div>
+        <div className="flex justify-center lg:justify-end">
+          <Phone />
+        </div>
+      </div>
+    </section>
+  );
+}
+
+/** Pinned, scroll-scrubbed layout — desktop only. */
+function PinnedShowcase() {
   const reduce = useReducedMotion();
   const ref = useRef<HTMLDivElement>(null);
   const [active, setActive] = useState(0);
@@ -333,32 +361,7 @@ export function DeviceShowcase() {
     setActive(Math.min(STAGES.length - 1, Math.floor(t * STAGES.length)));
   });
 
-  /* Reduced motion / fallback: a simple, non-pinned layout. */
-  if (reduce) {
-    return (
-      <section className="bg-[var(--bg-alt)] py-24 sm:py-32">
-        <div className="mx-auto grid w-full max-w-container items-center gap-16 px-6 sm:px-8 lg:grid-cols-2">
-          <div>
-            <span className="text-kicker">See it in action</span>
-            <h2 className="mt-4 text-display-md font-semibold text-ink">
-              Learn by building, right in your browser.
-            </h2>
-            <p className="mt-5 max-w-[46ch] text-[16px] leading-relaxed text-body">
-              Read a short lesson, build it in a real lab, run the tests, and keep the XP and
-              records you earn.
-            </p>
-            <Button href="/start-learning" className="mt-8">
-              Start learning free
-              <ArrowRight size={16} />
-            </Button>
-          </div>
-          <div className="flex justify-center lg:justify-end">
-            <Phone />
-          </div>
-        </div>
-      </section>
-    );
-  }
+  if (reduce) return <SimpleShowcase />;
 
   return (
     <section ref={ref} className="relative bg-[var(--bg-alt)]" style={{ height: "420vh" }}>
@@ -419,5 +422,19 @@ export function DeviceShowcase() {
         </div>
       </div>
     </section>
+  );
+}
+
+/** Mobile gets the simple stacked layout; large screens get the pinned scrub. */
+export function DeviceShowcase() {
+  return (
+    <>
+      <div className="lg:hidden">
+        <SimpleShowcase />
+      </div>
+      <div className="hidden lg:block">
+        <PinnedShowcase />
+      </div>
+    </>
   );
 }
