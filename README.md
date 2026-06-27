@@ -1,36 +1,49 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Unlimited Voices
 
-## Getting Started
+Production redesign of the Unlimited Voices website — free STEM, AI & coding education for youth.
 
-First, run the development server:
+## Stack
+
+- **Next.js 15** (App Router) + **TypeScript** (strict)
+- **Tailwind CSS v3** — pinned to v3 because Tailwind v4's native `oxide` binding requires Node 20, and this environment runs Node 18. v3 is pure-JS and fully compatible.
+- **Framer Motion** for animation (scroll reveals, count-ups, mobile menu, segmented filter)
+- **Firebase** (Auth + Firestore + Storage) behind `src/lib/firebase/*` with typed models
+- ESLint + Prettier
+
+## Getting started
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+npm install
+cp .env.example .env.local   # fill in Firebase keys (optional — app renders from seed content without them)
+npm run dev                  # http://localhost:3000
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+The app renders entirely from local typed content (`src/content/*`) when Firebase env vars are absent, so pages work before any backend is wired.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Design system
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Tokens live in `src/app/globals.css` (CSS custom properties, light + true-dark). Reusable primitives are in `src/components/ui/`:
 
-## Learn More
+`Button` · `Card` · `Badge` · `Input`/`Textarea` · `Accordion` · `StatNumber` · `Reveal` · `Container` · `Section` · `ThemeToggle` · line `icons`
 
-To learn more about Next.js, take a look at the following resources:
+Aesthetic rules: single ink-blue accent (`#2D4EDB`), hairline borders, no gradients, no emoji, no heavy shadows. Fonts: Space Grotesk (display), Hanken Grotesk (body), Space Mono (code).
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Accessibility is a brand value — theme, font-size, and reduce-motion are first-class preferences (`ThemeProvider`).
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Structure
 
-## Deploy on Vercel
+```
+src/
+  app/(site)/        # marketing routes (shared Nav + Footer layout)
+  components/ui/      # design-system primitives
+  components/home/    # Home page sections
+  content/            # typed content (seed source for Firestore)
+  hooks/              # useCountUp
+  lib/firebase/       # typed Firebase access
+```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Scripts
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- `npm run dev` — dev server
+- `npm run build` / `npm run start` — production
+- `npm run lint` — ESLint
