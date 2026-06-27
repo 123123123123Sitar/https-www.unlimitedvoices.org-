@@ -3,20 +3,10 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState, type FormEvent } from "react";
-import {
-  createUserWithEmailAndPassword,
-  signInWithEmailAndPassword,
-  signInWithPopup,
-  type AuthError,
-} from "firebase/auth";
 import { Button, Card, Input } from "@/components/ui";
 import { Check } from "@/components/ui/icons";
 import { Logo } from "@/components/Logo";
-import {
-  getFirebase,
-  googleProvider,
-  isFirebaseConfigured,
-} from "@/lib/firebase/config";
+import { getSupabaseBrowser, isSupabaseConfigured } from "@/lib/supabase/client";
 
 type Mode = "signin" | "signup";
 
@@ -47,31 +37,19 @@ function GoogleMark() {
   );
 }
 
-/** Map common Firebase auth error codes to plain, friendly messages. */
-function friendlyError(code: string): string {
-  switch (code) {
-    case "auth/invalid-email":
-      return "That email address doesn't look right.";
-    case "auth/user-disabled":
-      return "This account has been disabled.";
-    case "auth/user-not-found":
-    case "auth/invalid-credential":
-      return "We couldn't find an account with those details.";
-    case "auth/wrong-password":
-      return "That password is incorrect.";
-    case "auth/email-already-in-use":
-      return "An account already exists with that email.";
-    case "auth/weak-password":
-      return "Please choose a password with at least 6 characters.";
-    case "auth/too-many-requests":
-      return "Too many attempts. Please wait a moment and try again.";
-    case "auth/popup-closed-by-user":
-      return "The Google sign-in window was closed before finishing.";
-    case "auth/network-request-failed":
-      return "Network error. Check your connection and try again.";
-    default:
-      return "Something went wrong. Please try again.";
-  }
+/** Map common Supabase auth errors to plain, friendly messages. */
+function friendlyError(message: string): string {
+  const m = message.toLowerCase();
+  if (m.includes("invalid login")) return "We couldn't find an account with those details.";
+  if (m.includes("already registered")) return "An account already exists with that email.";
+  if (m.includes("password should be") || m.includes("at least 6"))
+    return "Please choose a password with at least 6 characters.";
+  if (m.includes("email") && m.includes("invalid")) return "That email address doesn't look right.";
+  if (m.includes("rate limit") || m.includes("too many"))
+    return "Too many attempts. Please wait a moment and try again.";
+  if (m.includes("network") || m.includes("fetch")) return "Network error. Check your connection and try again.";
+  if (m.includes("confirm")) return "Please confirm your email before signing in.";
+  return "Something went wrong. Please try again.";
 }
 
 function isValidEmail(value: string): boolean {
@@ -89,6 +67,7 @@ export function AuthCard({ mode }: { mode: Mode }) {
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
+  const [notice, setNotice] = useState<string | null>(null);
 
   const emailError =
     touched && !isValidEmail(email) ? "Enter a valid email address." : undefined;
@@ -114,47 +93,46 @@ export function AuthCard({ mode }: { mode: Mode }) {
     e.preventDefault();
     setTouched(true);
     setFormError(null);
+    setNotice(null);
     if (!isValid) return;
 
     setLoading(true);
 
+    const supabase = getSupabaseBrowser();
     // Not configured → simulate a successful flow for the demo.
-    if (!isFirebaseConfigured) {
-      setTimeout(goToDashboard, 600);
-      return;
-    }
-
-    const fb = getFirebase();
-    if (!fb) {
+    if (!supabase) {
       setTimeout(goToDashboard, 600);
       return;
     }
 
     try {
       if (isSignup) {
-        await createUserWithEmailAndPassword(fb.auth, email, password);
+        const { data, error } = await supabase.auth.signUp({ email, password });
+        if (error) throw error;
+        // With email confirmation on, there's no session yet.
+        if (data.session) {
+          goToDashboard();
+        } else {
+          setNotice("Check your email to confirm your account, then sign in.");
+          setLoading(false);
+        }
       } else {
-        await signInWithEmailAndPassword(fb.auth, email, password);
+        const { error } = await supabase.auth.signInWithPassword({ email, password });
+        if (error) throw error;
+        goToDashboard();
       }
-      goToDashboard();
     } catch (err) {
-      const code = (err as AuthError)?.code ?? "";
-      setFormError(friendlyError(code));
+      setFormError(friendlyError(err instanceof Error ? err.message : ""));
       setLoading(false);
     }
   }
 
   async function handleGoogle() {
     setFormError(null);
+    setNotice(null);
 
-    if (!isFirebaseConfigured) {
-      setGoogleLoading(true);
-      setTimeout(goToDashboard, 600);
-      return;
-    }
-
-    const fb = getFirebase();
-    if (!fb) {
+    const supabase = getSupabaseBrowser();
+    if (!supabase) {
       setGoogleLoading(true);
       setTimeout(goToDashboard, 600);
       return;
@@ -162,11 +140,14 @@ export function AuthCard({ mode }: { mode: Mode }) {
 
     setGoogleLoading(true);
     try {
-      await signInWithPopup(fb.auth, googleProvider);
-      goToDashboard();
+      // Redirects to Google, then back through /auth/callback into the app.
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: "google",
+        options: { redirectTo: `${window.location.origin}/auth/callback?next=/dashboard` },
+      });
+      if (error) throw error;
     } catch (err) {
-      const code = (err as AuthError)?.code ?? "";
-      setFormError(friendlyError(code));
+      setFormError(friendlyError(err instanceof Error ? err.message : ""));
       setGoogleLoading(false);
     }
   }
@@ -219,9 +200,9 @@ export function AuthCard({ mode }: { mode: Mode }) {
                 : "Welcome back. Let's keep going."}
             </p>
 
-            {!isFirebaseConfigured && (
+            {!isSupabaseConfigured && (
               <p className="mt-5 rounded-[10px] border border-hairline bg-surface-2 px-3.5 py-2.5 text-[13px] leading-snug text-caption">
-                Demo mode. Connect Firebase to enable real accounts.
+                Demo mode. Connect Supabase to enable real accounts.
               </p>
             )}
 
@@ -262,6 +243,15 @@ export function AuthCard({ mode }: { mode: Mode }) {
                   className="rounded-[10px] border border-red-500/40 bg-red-500/5 px-3.5 py-2.5 text-[13px] leading-snug text-red-500"
                 >
                   {formError}
+                </p>
+              )}
+
+              {notice && (
+                <p
+                  role="status"
+                  className="rounded-[10px] border border-hairline bg-surface-2 px-3.5 py-2.5 text-[13px] leading-snug text-body"
+                >
+                  {notice}
                 </p>
               )}
 

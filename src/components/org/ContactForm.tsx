@@ -4,8 +4,8 @@ import { motion, useReducedMotion } from "framer-motion";
 import { useState, type FormEvent } from "react";
 import { Button, Card, Input, Textarea } from "@/components/ui";
 import { Check } from "@/components/ui/icons";
-import { getFirebase } from "@/lib/firebase/config";
-import { COLLECTIONS } from "@/lib/firebase/types";
+import { getSupabaseBrowser } from "@/lib/supabase/client";
+import { TABLES, type ContactInsert } from "@/lib/supabase/types";
 
 interface Errors {
   name?: string;
@@ -41,15 +41,15 @@ export function ContactForm() {
 
     setSubmitting(true);
     try {
-      const fb = getFirebase();
-      if (fb) {
-        const { addDoc, collection } = await import("firebase/firestore");
-        await addDoc(collection(fb.db, COLLECTIONS.contacts), {
+      const supabase = getSupabaseBrowser();
+      if (supabase) {
+        const payload: ContactInsert = {
           name: name.trim(),
           email: email.trim(),
           message: message.trim(),
-          createdAt: Date.now(),
-        });
+        };
+        const { error } = await supabase.from(TABLES.contacts).insert(payload);
+        if (error) throw error;
       } else {
         // Env not configured — simulate a successful send in dev/CI.
         await new Promise((r) => setTimeout(r, 600));

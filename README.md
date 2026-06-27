@@ -7,18 +7,18 @@ Production redesign of the Unlimited Voices website — free STEM, AI & coding e
 - **Next.js 15** (App Router) + **TypeScript** (strict)
 - **Tailwind CSS v3** — pinned to v3 because Tailwind v4's native `oxide` binding requires Node 20, and this environment runs Node 18. v3 is pure-JS and fully compatible.
 - **Framer Motion** for animation (scroll reveals, count-ups, mobile menu, segmented filter)
-- **Firebase** (Auth + Firestore + Storage) behind `src/lib/firebase/*` with typed models
+- **Supabase** (Postgres + Auth + Storage) behind `src/lib/supabase/*` with typed models; SQL in `supabase/migrations`
 - ESLint + Prettier
 
 ## Getting started
 
 ```bash
 npm install
-cp .env.example .env.local   # fill in Firebase keys (optional — app renders from seed content without them)
+cp .env.example .env.local   # fill in Supabase URL + anon key (optional — app renders from seed content without them)
 npm run dev                  # http://localhost:3000
 ```
 
-The app renders entirely from local typed content (`src/content/*`) when Firebase env vars are absent, so pages work before any backend is wired.
+The app renders entirely from local typed content (`src/content/*`) when Supabase env vars are absent, so pages work before any backend is wired.
 
 ## Design system
 
@@ -37,9 +37,9 @@ src/
   app/(site)/        # marketing routes (shared Nav + Footer layout)
   components/ui/      # design-system primitives
   components/home/    # Home page sections
-  content/            # typed content (seed source for Firestore)
+  content/            # typed content (seed source for the database)
   hooks/              # useCountUp
-  lib/firebase/       # typed Firebase access
+  lib/supabase/       # typed Supabase access (browser + server clients)
 ```
 
 ## Scripts
