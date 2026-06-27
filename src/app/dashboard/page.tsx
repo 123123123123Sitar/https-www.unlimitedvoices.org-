@@ -2,16 +2,17 @@ import { Button, Card, StatNumber } from "@/components/ui";
 import { ArrowRight, Bolt } from "@/components/ui/icons";
 import { courses } from "@/content/courses";
 import { ProgressBar } from "@/components/dashboard/Progress";
-import { courseProgress, profile, weeklyXp } from "@/components/dashboard/sample";
+import { courseProgress, weeklyXp } from "@/components/dashboard/sample";
+import { getDashProfile } from "@/lib/supabase/profile";
 
-const quickStats: { label: string; value: number; suffix?: string }[] = [
-  { label: "XP this week", value: profile.xpThisWeek },
-  { label: "MERIT", value: profile.merit },
-  { label: "Courses in progress", value: profile.coursesInProgress },
-  { label: "Day streak", value: profile.streak },
-];
-
-export default function OverviewPage() {
+export default async function OverviewPage() {
+  const profile = await getDashProfile();
+  const quickStats: { label: string; value: number; suffix?: string }[] = [
+    { label: "Total XP", value: profile.xp },
+    { label: "MERIT", value: profile.merit },
+    { label: "Coins", value: profile.coins },
+    { label: "Day streak", value: profile.streak },
+  ];
   const levelPct = (profile.levelXp / profile.levelTarget) * 100;
   const resume = courses[0];
   const peakXp = Math.max(...weeklyXp.map((d) => d.xp), 1);

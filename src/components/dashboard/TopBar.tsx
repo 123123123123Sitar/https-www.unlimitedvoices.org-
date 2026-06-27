@@ -3,10 +3,11 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { ArrowRight, Bolt } from "@/components/ui/icons";
-import { activeNavItem, profile } from "./sample";
+import { activeNavItem } from "./sample";
+import type { DashProfile } from "@/lib/supabase/profile";
 
 /** Main-area top bar: page kicker + title, a stat chip cluster, and a back link. */
-export function TopBar() {
+export function TopBar({ profile }: { profile: DashProfile }) {
   const pathname = usePathname();
   const item = activeNavItem(pathname);
 
@@ -31,7 +32,7 @@ export function TopBar() {
               Lv {profile.level}
             </span>
             <span className="inline-flex items-center rounded-full border border-hairline bg-surface px-2.5 py-1 font-mono text-[11px] text-body">
-              {profile.levelXp.toLocaleString()} XP
+              {profile.xp.toLocaleString()} XP
             </span>
           </div>
 

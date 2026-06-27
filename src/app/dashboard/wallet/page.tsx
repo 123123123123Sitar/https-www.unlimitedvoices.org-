@@ -1,16 +1,20 @@
 import { Card } from "@/components/ui";
 import { Shield } from "@/components/ui/icons";
-import { walletPreview } from "@/content/home";
 import { ProgressBar } from "@/components/dashboard/Progress";
-import { profile, walletHistory } from "@/components/dashboard/sample";
+import { walletHistory } from "@/components/dashboard/sample";
+import { getDashProfile } from "@/lib/supabase/profile";
 
-/** Five headline balances: the four currencies plus the current level. */
-const balances: { label: string; value: string; note: string }[] = [
-  ...walletPreview.currencies.map((c) => ({ label: c.label, value: c.value, note: c.note })),
-  { label: "Level", value: String(profile.level), note: "Grows as you earn XP" },
-];
+export default async function WalletPage() {
+  const profile = await getDashProfile();
 
-export default function WalletPage() {
+  // Five headline balances, all from the live profile.
+  const balances: { label: string; value: string; note: string }[] = [
+    { label: "Coins", value: profile.coins.toLocaleString(), note: "Earned for finishing lessons & labs" },
+    { label: "Gems", value: profile.gems.toLocaleString(), note: "Rare rewards for streaks & contests" },
+    { label: "XP", value: profile.xp.toLocaleString(), note: "Total experience. Only ever goes up" },
+    { label: "Level", value: String(profile.level), note: "Grows as you earn XP" },
+    { label: "MERIT", value: String(profile.merit), note: "Proof of what you've learned" },
+  ];
   const levelPct = (profile.levelXp / profile.levelTarget) * 100;
 
   return (

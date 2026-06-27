@@ -7,6 +7,8 @@ export interface Profile {
   xp: number;
   merit: number;
   streak: number;
+  coins: number;
+  gems: number;
   created_at: string;
 }
 

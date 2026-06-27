@@ -1,8 +1,9 @@
 import { Card } from "@/components/ui";
 import { SettingsPanel } from "@/components/dashboard/SettingsPanel";
-import { profile } from "@/components/dashboard/sample";
+import { getDashProfile } from "@/lib/supabase/profile";
 
-export default function SettingsPage() {
+export default async function SettingsPage() {
+  const profile = await getDashProfile();
   return (
     <div className="space-y-6">
       {/* Accessibility */}

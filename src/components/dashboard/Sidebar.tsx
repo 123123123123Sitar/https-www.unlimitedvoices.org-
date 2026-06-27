@@ -4,7 +4,9 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Logo } from "@/components/Logo";
 import { cn } from "@/lib/utils";
-import { dashNav, profile } from "./sample";
+import { dashNav } from "./sample";
+import { SignOutButton } from "./SignOutButton";
+import type { DashProfile } from "@/lib/supabase/profile";
 
 function isActive(pathname: string, href: string): boolean {
   // The index route (/dashboard) must match exactly so it doesn't light up on
@@ -14,7 +16,7 @@ function isActive(pathname: string, href: string): boolean {
 }
 
 /** Slim app sidebar — fixed on desktop, a scrollable link row on mobile. */
-export function Sidebar() {
+export function Sidebar({ profile }: { profile: DashProfile }) {
   const pathname = usePathname();
 
   return (
@@ -53,8 +55,8 @@ export function Sidebar() {
           </ul>
         </nav>
 
-        <div className="border-t border-hairline p-3">
-          <div className="flex items-center gap-3 rounded-[10px] px-2 py-2">
+        <div className="space-y-2 border-t border-hairline p-3">
+          <div className="flex items-center gap-3 rounded-[10px] px-2 py-1">
             <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-hairline bg-surface-2 font-mono text-[12px] font-bold text-ink">
               {profile.monogram}
             </span>
@@ -65,6 +67,7 @@ export function Sidebar() {
               </span>
             </span>
           </div>
+          <SignOutButton />
         </div>
       </aside>
 
