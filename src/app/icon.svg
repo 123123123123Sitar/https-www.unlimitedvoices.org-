@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="32" height="32">
+  <style>
+    .frame { stroke: #0B0B0C; }
+    .tile { fill: #2D4EDB; }
+    @media (prefers-color-scheme: dark) {
+      .frame { stroke: #EDEDED; }
+      .tile { fill: #5B7BFF; }
+    }
+  </style>
+  <rect class="frame" x="4.6" y="4.6" width="22.8" height="22.8" rx="6.6" fill="none" stroke-width="2.4" />
+  <rect class="tile" x="12.4" y="12.4" width="7.2" height="7.2" rx="2.2" />
+</svg>
